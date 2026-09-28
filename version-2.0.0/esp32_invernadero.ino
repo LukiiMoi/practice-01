@@ -1,45 +1,39 @@
 /*
- * Micro-Invernadero Inteligente - ESP32
+ * Invernadero  - ESP32
  * Practica 1 - Version 2.0.0
  * Sistema de control con PWM, ADC y Monitor Serie
  */
 
 #include <Arduino.h>
 
-// ============================================
 // PINES (Asignacion estricta del enunciado)
-// ============================================
 #define PIN_TEMP   34   // Sensor termico LM35/DHT - ADC (12 bits)
 #define PIN_LDR    32   // Sensor LDR - ADC (12 bits)
 #define PIN_FAN    18   // Ventilador Motor DC - PWM (ledc 5kHz)
 #define PIN_LED    19   // LED de potencia - PWM (ledc 5kHz)
 
-// ============================================
+
 // CONFIGURACION PWM
-// ============================================
 #define PWM_FREQ     5000    // 5 kHz
 #define PWM_RES      8       // 8 bits (0-255)
 #define CH_FAN       0
 #define CH_LED       1
 
-// ============================================
+
 // CONSTANTES DE CONTROL
-// ============================================
 #define TEMP_UMBRAL  30.0    // °C - activa ventilador al 100%
 #define ADC_MAX      4095.0  // Resolucion 12 bits
 #define VREF         3.3     // Voltaje de referencia del ADC
 
-// ============================================
+
 // VARIABLES GLOBALES
-// ============================================
 float temperatura = 0.0;   // °C
 float luz = 0.0;           // % (0 = oscuridad, 100 = luz plena)
 int fan_duty = 0;          // 0-255
 int led_duty = 0;          // 0-255
 
-// ============================================
+
 // SETUP
-// ============================================
 void setup() {
   Serial.begin(115200);
   delay(500);
@@ -71,9 +65,8 @@ void setup() {
   Serial.println("============================================");
 }
 
-// ============================================
+
 // LOOP PRINCIPAL
-// ============================================
 void loop() {
   leerSensores();
   controlTemperatura();
@@ -82,9 +75,8 @@ void loop() {
   delay(500);
 }
 
-// ============================================
+
 // LECTURA DE SENSORES
-// ============================================
 void leerSensores() {
   // --- Temperatura (LM35: 10 mV por °C) ---
   int raw_temp = analogRead(PIN_TEMP);
@@ -96,9 +88,8 @@ void leerSensores() {
   luz = (raw_ldr / ADC_MAX) * 100.0;   // Normalizado a 0-100 %
 }
 
-// ============================================
+
 // CONTROL DE TEMPERATURA (ON/OFF)
-// ============================================
 void controlTemperatura() {
   // Gestion termica: ventilador al 100% si T > 30 °C
   if (temperatura > TEMP_UMBRAL) {
@@ -109,9 +100,8 @@ void controlTemperatura() {
   ledcWrite(CH_FAN, fan_duty);
 }
 
-// ============================================
+
 // CONTROL DE LUMINOSIDAD (PROPORCIONAL INVERSO)
-// ============================================
 void controlLuminosidad() {
   // A menor luz natural, mayor intensidad del LED
   // Mapeo: LDR 0-100% -> LED 255-0
@@ -120,9 +110,8 @@ void controlLuminosidad() {
   ledcWrite(CH_LED, led_duty);
 }
 
-// ============================================
+
 // PROCESAMIENTO DE COMANDOS SERIALES
-// ============================================
 void procesarComandos() {
   if (Serial.available() > 0) {
     String cmd = Serial.readStringUntil('\n');
@@ -162,9 +151,8 @@ void procesarComandos() {
   }
 }
 
-// ============================================
+
 // TELEMETRIA EN FORMATO JSON
-// ============================================
 void enviarTelemetria() {
   Serial.println("{");
   Serial.print("  \"temperatura\": ");
